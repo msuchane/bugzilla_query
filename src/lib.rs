@@ -96,6 +96,7 @@ pub struct Flag {
     pub type_id: i32,
     pub creation_date: String,
     pub modification_date: String,
+    pub name: String,
     pub status: String,
     pub setter: String,
     pub requestee: String,
