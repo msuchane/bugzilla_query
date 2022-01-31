@@ -3,6 +3,7 @@
 
 use std::collections::HashMap;
 
+use log::debug;
 use restson::{Error as RestError, Response as RestResponse, RestClient, RestPath};
 use serde::Deserialize;
 use serde_json::Value;
@@ -119,7 +120,7 @@ pub fn bug(host: &str, bug: &str, api_key: &str) -> Bug {
     // Gets a bug by ID and deserializes the JSON to data variable
     let data: RestResponse<Response> = client.get(bug).unwrap();
     let response = data.into_inner();
-    eprintln!("{:#?}", response);
+    debug!("{:#?}", response);
 
     response.bugs[0].clone()
 }
