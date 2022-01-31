@@ -122,7 +122,13 @@ pub fn bug(host: &str, bug: &str, api_key: &str) -> Bug {
     let response = data.into_inner();
     debug!("{:#?}", response);
 
-    response.bugs[0].clone()
+    // This is a way to return the first (and only) element of the Vec,
+    // without cloning it.
+    response
+        .bugs
+        .into_iter()
+        .next()
+        .expect("Bugzilla returned no bugs.")
 }
 
 // API call with several &str parameter, which are the bug IDs.
