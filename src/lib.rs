@@ -112,7 +112,7 @@ impl RestPath<&str> for Response {
     }
 }
 
-pub fn bug(host: &str, bug: &str, api_key: &str) -> Bug {
+pub fn bug(host: &str, bug: &str, api_key: &str) -> Option<Bug> {
     let mut client = RestClient::builder().blocking(host).unwrap();
     client
         .set_header("Authorization", &format!("Bearer {}", api_key))
@@ -128,7 +128,6 @@ pub fn bug(host: &str, bug: &str, api_key: &str) -> Bug {
         .bugs
         .into_iter()
         .next()
-        .expect("Bugzilla returned no bugs.")
 }
 
 // API call with several &str parameter, which are the bug IDs.
