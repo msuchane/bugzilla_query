@@ -105,7 +105,7 @@ pub struct Flag {
     pub extra: HashMap<String, Value>,
 }
 
-// API call with one String parameter, which is the bug ID
+// API call with one &str parameter, which is the bug ID
 impl RestPath<&str> for Response {
     fn get_path(param: &str) -> Result<String, RestError> {
         Ok(format!("rest/bug?id={}", param))
@@ -123,6 +123,27 @@ pub fn bug(host: &str, bug: &str, api_key: &str) -> Bug {
     debug!("{:#?}", response);
 
     response.bugs[0].clone()
+}
+
+// API call with several &str parameter, which are the bug IDs.
+// TODO: Make this generic over &[&str] and &[String].
+impl RestPath<&[&str]> for Response {
+    fn get_path(params: &[&str]) -> Result<String, RestError> {
+        Ok(format!("rest/bug?id={}", params.join(",")))
+    }
+}
+
+pub fn bugs(host: &str, bugs: &[&str], api_key: &str) -> Vec<Bug> {
+    let mut client = RestClient::builder().blocking(host).unwrap();
+    client
+        .set_header("Authorization", &format!("Bearer {}", api_key))
+        .unwrap();
+    // Gets a bug by ID and deserializes the JSON to data variable
+    let data: RestResponse<Response> = client.get(bugs).unwrap();
+    let response = data.into_inner();
+    debug!("{:#?}", response);
+
+    response.bugs
 }
 
 #[cfg(test)]
