@@ -4,7 +4,7 @@
 use std::collections::HashMap;
 
 use log::debug;
-use restson::{Error as RestError, Response as RestResponse, RestClient, RestPath};
+use restson::{Error, Response as RestResponse, RestClient, RestPath};
 use serde::Deserialize;
 use serde_json::Value;
 
@@ -107,48 +107,45 @@ pub struct Flag {
 
 // API call with one &str parameter, which is the bug ID
 impl RestPath<&str> for Response {
-    fn get_path(param: &str) -> Result<String, RestError> {
+    fn get_path(param: &str) -> Result<String, Error> {
         Ok(format!("rest/bug?id={}", param))
     }
 }
 
-pub fn bug(host: &str, bug: &str, api_key: &str) -> Option<Bug> {
-    let mut client = RestClient::builder().blocking(host).unwrap();
-    client
-        .set_header("Authorization", &format!("Bearer {}", api_key))
-        .unwrap();
+pub fn bug(host: &str, bug: &str, api_key: &str) -> Result<Bug, Error> {
+    let mut client = RestClient::builder().blocking(host)?;
+    client.set_header("Authorization", &format!("Bearer {}", api_key))?;
     // Gets a bug by ID and deserializes the JSON to data variable
-    let data: RestResponse<Response> = client.get(bug).unwrap();
+    let data: RestResponse<Response> = client.get(bug)?;
     let response = data.into_inner();
     debug!("{:#?}", response);
 
     // This is a way to return the first (and only) element of the Vec,
     // without cloning it.
-    response
-        .bugs
-        .into_iter()
-        .next()
+    // TODO: I'm using InvalidValue here mostly as a placeholder.
+    // The response should always contain one bug, but if it doesn't,
+    // I don't know how best to report it. Maybe just panic?
+    response.bugs.into_iter().next().ok_or(Error::InvalidValue)
 }
 
 // API call with several &str parameter, which are the bug IDs.
 // TODO: Make this generic over &[&str] and &[String].
 impl RestPath<&[&str]> for Response {
-    fn get_path(params: &[&str]) -> Result<String, RestError> {
+    fn get_path(params: &[&str]) -> Result<String, Error> {
         Ok(format!("rest/bug?id={}", params.join(",")))
     }
 }
 
-pub fn bugs(host: &str, bugs: &[&str], api_key: &str) -> Vec<Bug> {
-    let mut client = RestClient::builder().blocking(host).unwrap();
-    client
-        .set_header("Authorization", &format!("Bearer {}", api_key))
-        .unwrap();
+pub fn bugs(host: &str, bugs: &[&str], api_key: &str) -> Result<Vec<Bug>, Error> {
+    let mut client = RestClient::builder().blocking(host)?;
+    client.set_header("Authorization", &format!("Bearer {}", api_key))?;
     // Gets a bug by ID and deserializes the JSON to data variable
-    let data: RestResponse<Response> = client.get(bugs).unwrap();
+    let data: RestResponse<Response> = client.get(bugs)?;
     let response = data.into_inner();
     debug!("{:#?}", response);
 
-    response.bugs
+    // TODO: Note that the resulting list might be empty and still Ok
+    Ok(response.bugs)
 }
 
 #[cfg(test)]
