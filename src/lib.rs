@@ -132,7 +132,7 @@ pub fn bug(host: &str, bug: &str, api_key: &str) -> Result<Bug, Error> {
 // TODO: Make this generic over &[&str] and &[String].
 impl RestPath<&[&str]> for Response {
     fn get_path(params: &[&str]) -> Result<String, Error> {
-        Ok(format!("rest/bug?id={}", params.join(",")))
+        Ok(format!("rest/bug?id={}&include_fields=_default,pool,flags", params.join(",")))
     }
 }
 
