@@ -100,7 +100,7 @@ pub struct Flag {
     pub name: String,
     pub status: String,
     pub setter: String,
-    pub requestee: String,
+    pub requestee: Option<String>,
     #[serde(flatten)]
     pub extra: HashMap<String, Value>,
 }
