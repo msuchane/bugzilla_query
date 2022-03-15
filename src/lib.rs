@@ -108,7 +108,8 @@ pub struct Flag {
 // API call with one &str parameter, which is the bug ID
 impl RestPath<&str> for Response {
     fn get_path(param: &str) -> Result<String, Error> {
-        Ok(format!("rest/bug?id={}", param))
+        // TODO: Make these configurable:
+        Ok(format!("rest/bug?id={}&include_fields=_default,pool,flags", param))
     }
 }
 
@@ -132,6 +133,7 @@ pub fn bug(host: &str, bug: &str, api_key: &str) -> Result<Bug, Error> {
 // TODO: Make this generic over &[&str] and &[String].
 impl RestPath<&[&str]> for Response {
     fn get_path(params: &[&str]) -> Result<String, Error> {
+        // TODO: Make these configurable:
         Ok(format!("rest/bug?id={}&include_fields=_default,pool,flags", params.join(",")))
     }
 }
