@@ -8,11 +8,15 @@ mod bug_model;
 
 pub use crate::bug_model::{Bug, BugzillaError, Response};
 
+// TODO: Make these configurable.
+// For now, let's define the included fields as a constant.
+const INCLUDED_FIELDS: &'static str = "_default,pool,flags";
+
 // API call with one &str parameter, which is the bug ID
 impl RestPath<&str> for Response {
     fn get_path(param: &str) -> Result<String, Error> {
         // TODO: Make these configurable:
-        Ok(format!("rest/bug?id={}&include_fields=_default,pool,flags", param))
+        Ok(format!("rest/bug?id={}&include_fields={}", param, INCLUDED_FIELDS))
     }
 }
 
@@ -37,7 +41,7 @@ pub fn bug(host: &str, bug: &str, api_key: &str) -> Result<Bug, Error> {
 impl RestPath<&[&str]> for Response {
     fn get_path(params: &[&str]) -> Result<String, Error> {
         // TODO: Make these configurable:
-        Ok(format!("rest/bug?id={}&include_fields=_default,pool,flags", params.join(",")))
+        Ok(format!("rest/bug?id={}&include_fields={}", params.join(","), INCLUDED_FIELDS))
     }
 }
 
