@@ -1,11 +1,14 @@
 [package]
 name = "bugzilla_query"
 authors = ["Marek Suchánek <msuchane@redhat.com>"]
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 license = "Apache-2.0"
 description = "Access bugs on a remote Bugzilla instance."
-readme = "README.adoc"
+readme = "README.md"
+documentation = "https://docs.rs/bugzilla_query/"
+homepage = "https://github.com/msuchane/bugzilla_query"
+repository = "https://github.com/msuchane/bugzilla_query"
 keywords = ["bugzilla", "rest"]
 categories = ["api-bindings"]
 
