@@ -1,4 +1,4 @@
-// API documentation:
+// Bugzilla API documentation:
 // https://bugzilla.redhat.com/docs/en/html/api/core/v1/general.html
 
 use log::debug;
@@ -12,12 +12,13 @@ pub use crate::bug_model::{Bug, BugzillaError, Response};
 // For now, let's define the included fields as a constant.
 const INCLUDED_FIELDS: &str = "_default,pool,flags";
 
+/// The authorization method that the crate uses when contacting Bugzilla.
 pub enum Authorization {
     Anonymous,
     ApiKey(String),
 }
 
-// API call with one &str parameter, which is the bug ID
+/// API call with one &str parameter, which is the bug ID
 impl RestPath<&str> for Response {
     fn get_path(param: &str) -> Result<String, Error> {
         // TODO: Make these configurable:
@@ -28,6 +29,7 @@ impl RestPath<&str> for Response {
     }
 }
 
+/// Access a single bug by its ID.
 pub fn bug(host: &str, bug: &str, auth: Authorization) -> Result<Bug, Error> {
     let mut client = RestClient::builder().blocking(host)?;
 
@@ -50,8 +52,8 @@ pub fn bug(host: &str, bug: &str, auth: Authorization) -> Result<Bug, Error> {
     response.bugs.into_iter().next().ok_or(Error::InvalidValue)
 }
 
-// API call with several &str parameter, which are the bug IDs.
 // TODO: Make this generic over &[&str] and &[String].
+/// API call with several &str parameter, which are the bug IDs.
 impl RestPath<&[&str]> for Response {
     fn get_path(params: &[&str]) -> Result<String, Error> {
         // TODO: Make these configurable:
@@ -63,9 +65,16 @@ impl RestPath<&[&str]> for Response {
     }
 }
 
-pub fn bugs(host: &str, bugs: &[&str], api_key: &str) -> Result<Vec<Bug>, Error> {
+/// Access several bugs by their IDs.
+pub fn bugs(host: &str, bugs: &[&str], auth: Authorization) -> Result<Vec<Bug>, Error> {
     let mut client = RestClient::builder().blocking(host)?;
-    client.set_header("Authorization", &format!("Bearer {}", api_key))?;
+    
+    // If the user selects the API key authorization, set the API key in the request header.
+    // Otherwise, the anonymous authorization doesn't modify the request in any way.
+    if let Authorization::ApiKey(key) = auth {
+        client.set_header("Authorization", &format!("Bearer {}", key))?;
+    }
+
     // Gets a bug by ID and deserializes the JSON to data variable
     let data: RestResponse<Response> = client.get(bugs)?;
     let response = data.into_inner();

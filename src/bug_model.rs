@@ -6,6 +6,8 @@ use std::collections::HashMap;
 use serde::Deserialize;
 use serde_json::Value;
 
+/// The response from Bugzilla, which includes the list of requested bugs
+/// and some additional metadata.
 #[derive(Clone, Debug, Deserialize)]
 pub struct Response {
     pub offset: i32,
@@ -16,6 +18,7 @@ pub struct Response {
     pub extra: HashMap<String, Value>,
 }
 
+/// An error report from Bugzilla.
 #[derive(Clone, Debug, Deserialize)]
 pub struct BugzillaError {
     pub error: bool,
@@ -25,6 +28,7 @@ pub struct BugzillaError {
     pub extra: HashMap<String, Value>,
 }
 
+/// The prepresentation of a single Bugzilla bug with all its fields.
 #[derive(Clone, Debug, Deserialize)]
 pub struct Bug {
     pub op_sys: String,
