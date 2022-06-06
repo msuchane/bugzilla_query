@@ -1,15 +1,15 @@
-= bugzilla_query
+# bugzilla_query
 
 Access bugs on a remote Bugzilla instance.
 
-WARNING: This crate is in early stages of development. The interface will change, and it might not work at all in your environment.
+**WARNING**: This crate is in early stages of development. The interface will change, and it might not work at all in your environment.
 
-== Description
+## Description
 
 The `bugzilla_query` crate is a Rust library that can query a Bugzilla instance using its REST API. It returns a strongly typed representation of the requested bugs.
 
 This library provides no functionality to create or modify bugs. The access is read-only.
 
-== Usage
+## Usage
 
 To be added.
