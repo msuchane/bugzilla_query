@@ -37,12 +37,12 @@ impl RestPath<&[&str]> for Response {
 
 impl BzInstance {
     /// Access several bugs by their IDs.
-    pub fn bugs(self, ids: &[&str]) -> Result<Vec<Bug>, Error> {
+    pub fn bugs(&self, ids: &[&str]) -> Result<Vec<Bug>, Error> {
         let mut client = RestClient::builder().blocking(&self.host)?;
 
         // If the user selects the API key authorization, set the API key in the request header.
         // Otherwise, the anonymous authorization doesn't modify the request in any way.
-        if let Auth::ApiKey(key) = self.auth {
+        if let Auth::ApiKey(key) = &self.auth {
             client.set_header("Authorization", &format!("Bearer {}", key))?;
         }
 
@@ -56,7 +56,7 @@ impl BzInstance {
     }
 
     /// Access a single bug by its ID.
-    pub fn bug(self, id: &str) -> Result<Bug, Error> {
+    pub fn bug(&self, id: &str) -> Result<Bug, Error> {
         // Reuse the `bugs` function. Later, extract the first element.
         let bugs = self.bugs(&[id])?;
 
