@@ -24,7 +24,10 @@ fn check_standard_fields() {
     .unwrap();
 
     assert_eq!(bug.id, 1906887);
-    assert_eq!(bug.summary, "Test the CoRN release notes generator (populated)");
+    assert_eq!(
+        bug.summary,
+        "Test the CoRN release notes generator (populated)"
+    );
     assert_eq!(bug.status, "CLOSED");
     assert_eq!(bug.resolution, "CURRENTRELEASE");
     assert_eq!(bug.is_open, false);
