@@ -6,7 +6,7 @@ use restson::{Error, Response as RestResponse, RestClient, RestPath};
 
 mod bug_model;
 
-pub use crate::bug_model::{Bug, BugzillaError, Response};
+pub use crate::bug_model::{Bug, BugzillaError, Flag, Response, User};
 
 // TODO: Make these configurable.
 // For now, let's define the included fields as a constant.
