@@ -10,19 +10,33 @@ pub use crate::bug_model::{Bug, BugzillaError, Response};
 
 // TODO: Make these configurable.
 // For now, let's define the included fields as a constant.
-const INCLUDED_FIELDS: &'static str = "_default,pool,flags";
+const INCLUDED_FIELDS: &str = "_default,pool,flags";
+
+pub enum Authorization {
+    Anonymous,
+    ApiKey(String),
+}
 
 // API call with one &str parameter, which is the bug ID
 impl RestPath<&str> for Response {
     fn get_path(param: &str) -> Result<String, Error> {
         // TODO: Make these configurable:
-        Ok(format!("rest/bug?id={}&include_fields={}", param, INCLUDED_FIELDS))
+        Ok(format!(
+            "rest/bug?id={}&include_fields={}",
+            param, INCLUDED_FIELDS
+        ))
     }
 }
 
-pub fn bug(host: &str, bug: &str, api_key: &str) -> Result<Bug, Error> {
+pub fn bug(host: &str, bug: &str, auth: Authorization) -> Result<Bug, Error> {
     let mut client = RestClient::builder().blocking(host)?;
-    client.set_header("Authorization", &format!("Bearer {}", api_key))?;
+
+    // If the user selects the API key authorization, set the API key in the request header.
+    // Otherwise, the anonymous authorization doesn't modify the request in any way.
+    if let Authorization::ApiKey(key) = auth {
+        client.set_header("Authorization", &format!("Bearer {}", key))?;
+    }
+
     // Gets a bug by ID and deserializes the JSON to data variable
     let data: RestResponse<Response> = client.get(bug)?;
     let response = data.into_inner();
@@ -41,7 +55,11 @@ pub fn bug(host: &str, bug: &str, api_key: &str) -> Result<Bug, Error> {
 impl RestPath<&[&str]> for Response {
     fn get_path(params: &[&str]) -> Result<String, Error> {
         // TODO: Make these configurable:
-        Ok(format!("rest/bug?id={}&include_fields={}", params.join(","), INCLUDED_FIELDS))
+        Ok(format!(
+            "rest/bug?id={}&include_fields={}",
+            params.join(","),
+            INCLUDED_FIELDS
+        ))
     }
 }
 

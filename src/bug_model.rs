@@ -1,7 +1,6 @@
 /// This module replicates the fields in a Bugzilla bug as strongly typed structs.
 /// Any extra fields that come from a custom Bugzilla configuration are captured
 /// in the `extra` hash map in the parent struct.
-
 use std::collections::HashMap;
 
 use serde::Deserialize;
