@@ -38,3 +38,38 @@ fn check_standard_fields() {
     assert_eq!(bug.docs_contact, "Marek Suchánek");
     assert_eq!(bug.docs_contact_detail.unwrap().email, "msuchane");
 }
+
+/// Check that the bug fields contain the expected values.
+/// Work with custom fields that are available in the Red Hat Bugzilla.
+/// Namely, check access to the Doc Text field.
+#[test]
+fn check_custom_fields() {
+    let bug = bug(
+        "https://bugzilla.redhat.com",
+        "1906887",
+        Authorization::Anonymous,
+    )
+    .unwrap();
+
+    // As a custom field, Doc Text is available in the `extra` hash map.
+    let doc_text = bug
+        .extra
+        .get("cf_release_notes")
+        .map(|rn| rn.as_str().unwrap().to_string())
+        .unwrap();
+
+    // This is the expected value of Doc Text. Bugzilla uses `\r\n` line endings.
+    let release_note = ".A test\r\n\
+        \r\n\
+        This is a testing release note.\r\n\
+        \r\n\
+        It is written in the proper format.\r\n\
+        \r\n\
+        The following is a list:\r\n\
+        \r\n\
+        * One\r\n\
+        * Two\r\n\
+        * Three";
+
+    assert_eq!(doc_text, release_note);
+}
