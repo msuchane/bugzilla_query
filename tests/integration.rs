@@ -1,27 +1,28 @@
 // use restson;
 use bugzilla_query::*;
 
+/// A common convenience function to get anonymous access
+/// to the Red Hat Bugzilla instance.
+fn rh_bugzilla() -> BzInstance {
+    BzInstance {
+        host: "https://bugzilla.redhat.com".to_string(),
+        auth: Auth::Anonymous,
+    }
+}
+
 /// Try accessing a public bug intended for testing
 #[test]
 fn access_bug() {
-    let _bug = bug(
-        "https://bugzilla.redhat.com",
-        "1906883",
-        Authorization::Anonymous,
-    )
-    .unwrap();
+    let instance = rh_bugzilla();
+    let _bug = instance.bug("1906883").unwrap();
 }
 
 /// Check that the bug fields contain the expected values.
 /// Work with fields that are standard in Bugzilla, rather than custom extensions.
 #[test]
 fn check_standard_fields() {
-    let bug = bug(
-        "https://bugzilla.redhat.com",
-        "1906887",
-        Authorization::Anonymous,
-    )
-    .unwrap();
+    let instance = rh_bugzilla();
+    let bug = instance.bug("1906887").unwrap();
 
     assert_eq!(bug.id, 1906887);
     assert_eq!(
@@ -44,12 +45,8 @@ fn check_standard_fields() {
 /// Namely, check access to the Doc Text field.
 #[test]
 fn check_custom_fields() {
-    let bug = bug(
-        "https://bugzilla.redhat.com",
-        "1906887",
-        Authorization::Anonymous,
-    )
-    .unwrap();
+    let instance = rh_bugzilla();
+    let bug = instance.bug("1906887").unwrap();
 
     // As a custom field, Doc Text is available in the `extra` hash map.
     let doc_text = bug
