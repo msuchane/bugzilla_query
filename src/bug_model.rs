@@ -28,7 +28,7 @@ pub struct BugzillaError {
     pub extra: HashMap<String, Value>,
 }
 
-/// The prepresentation of a single Bugzilla bug with all its fields.
+/// The representation of a single Bugzilla bug with all its fields.
 #[derive(Clone, Debug, Deserialize)]
 pub struct Bug {
     pub op_sys: String,
@@ -83,6 +83,7 @@ pub struct Bug {
     pub extra: HashMap<String, Value>,
 }
 
+/// The representation of a Bugzilla user account.
 #[derive(Clone, Debug, Deserialize)]
 pub struct User {
     pub email: String,
@@ -93,6 +94,9 @@ pub struct User {
     pub extra: HashMap<String, Value>,
 }
 
+/// The representation of a flag in a bug.
+/// A flag resembles a hash map entry, where `flag.name` is the key
+/// and `flag.status` is the value.
 #[derive(Clone, Debug, Deserialize)]
 pub struct Flag {
     pub id: i32,
