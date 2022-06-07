@@ -13,3 +13,7 @@ This library provides no functionality to create or modify bugs. The access is r
 ## Usage
 
 To be added.
+
+## See also
+
+* [`jira_query`](https://crates.io/crates/jira_query), a similar interface to Jira
