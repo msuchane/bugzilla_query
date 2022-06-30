@@ -1,4 +1,5 @@
 mod access;
+mod bug_methods;
 mod bug_model;
 
 pub use access::{Auth, BzInstance};

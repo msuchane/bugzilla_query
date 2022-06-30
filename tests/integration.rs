@@ -70,3 +70,17 @@ fn check_custom_fields() {
 
     assert_eq!(doc_text, release_note);
 }
+
+// Access to flags requires authentication, so I'm disabling this test for now.
+// TODO: Enable authenticated tests.
+/*
+/// Check that we can access flags and that a selected flag has the expected value.
+#[test]
+fn check_flags() {
+    let instance = rh_bugzilla();
+    let bug = instance.bug("1906887").unwrap();
+
+    let rdt = bug.get_flag("requires_doc_text");
+
+    assert_eq!(rdt, Some("+"));
+} */
