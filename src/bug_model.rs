@@ -1,7 +1,6 @@
 /// This module replicates the fields in a Bugzilla bug as strongly typed structs.
 /// Any extra fields that come from a custom Bugzilla configuration are captured
 /// in the `extra` hash map in the parent struct.
-use std::collections::HashMap;
 use std::fmt;
 
 use serde::Deserialize;
@@ -16,7 +15,7 @@ pub struct Response {
     pub total_matches: i32,
     pub bugs: Vec<Bug>,
     #[serde(flatten)]
-    pub extra: HashMap<String, Value>,
+    pub extra: Value,
 }
 
 /// An error report from Bugzilla.
@@ -26,7 +25,7 @@ pub struct BugzillaError {
     pub message: String,
     pub code: i32,
     #[serde(flatten)]
-    pub extra: HashMap<String, Value>,
+    pub extra: Value,
 }
 
 /// The representation of a single Bugzilla bug with all its fields.
@@ -81,7 +80,7 @@ pub struct Bug {
     pub tags: Option<Vec<String>>,
     pub dependent_products: Option<Vec<String>>,
     #[serde(flatten)]
-    pub extra: HashMap<String, Value>,
+    pub extra: Value,
 }
 
 /// The representation of a Bugzilla user account.
@@ -92,7 +91,7 @@ pub struct User {
     pub name: String,
     pub real_name: String,
     #[serde(flatten)]
-    pub extra: HashMap<String, Value>,
+    pub extra: Value,
 }
 
 /// The representation of a flag in a bug.
@@ -109,7 +108,7 @@ pub struct Flag {
     pub setter: String,
     pub requestee: Option<String>,
     #[serde(flatten)]
-    pub extra: HashMap<String, Value>,
+    pub extra: Value,
 }
 
 impl fmt::Display for Flag {
