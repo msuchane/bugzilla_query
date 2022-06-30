@@ -2,6 +2,7 @@
 /// Any extra fields that come from a custom Bugzilla configuration are captured
 /// in the `extra` hash map in the parent struct.
 use std::collections::HashMap;
+use std::fmt;
 
 use serde::Deserialize;
 use serde_json::Value;
@@ -109,4 +110,11 @@ pub struct Flag {
     pub requestee: Option<String>,
     #[serde(flatten)]
     pub extra: HashMap<String, Value>,
+}
+
+impl fmt::Display for Flag {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        // Displays the flag in the format of `name: value`.
+        write!(f, "{}: {}", self.name, self.status)
+    }
 }
