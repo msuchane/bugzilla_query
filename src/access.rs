@@ -7,9 +7,11 @@ use restson::{Error, Response as RestResponse, RestClient, RestPath};
 use crate::bug_model::{Bug, Response};
 
 /// Configuration and credentials to access a Bugzilla instance.
+#[derive(Default)]
 pub struct BzInstance {
     pub host: String,
     pub auth: Auth,
+    pub pagination: Pagination,
 }
 
 // TODO: Make these configurable.
@@ -17,20 +19,49 @@ pub struct BzInstance {
 const INCLUDED_FIELDS: &str = "_default,pool,flags";
 
 /// The authentication method that the crate uses when contacting Bugzilla.
+#[derive(Default)]
 pub enum Auth {
+    #[default]
     Anonymous,
     ApiKey(String),
 }
 
+/// Controls the upper limit of how many bugs the response from Bugzilla can contain:
+///
+/// * `Default`: Use the default settings of this instance, which sets an arbitrary limit on the number of bugs.
+/// * `Limit`: Use this upper limit instead.
+/// * `Unlimited`: Set the limit to 0, which disables the upper limit and returns all matching bugs.
+#[derive(Default)]
+pub enum Pagination {
+    #[default]
+    Default,
+    Limit(u32),
+    Unlimited,
+}
+
+/// This struct temporarily groups together all the parameters to make a REST request.
+/// It exists here because `RestPath` is only generic over a single parameter.
+struct Request<'a> {
+    ids: &'a [&'a str],
+    pagination: &'a Pagination,
+}
+
 // TODO: Make this generic over &[&str] and &[String].
 /// API call with several &str parameter, which are the bug IDs.
-impl RestPath<&[&str]> for Response {
-    fn get_path(params: &[&str]) -> Result<String, Error> {
+impl RestPath<Request<'_>> for Response {
+    fn get_path(request: Request) -> Result<String, Error> {
+        let limit = match request.pagination {
+            Pagination::Default => String::new(),
+            Pagination::Limit(n) => format!("&limit={}", n),
+            Pagination::Unlimited => "&limit=0".to_string(),
+        };
+
         // TODO: Make these configurable:
         Ok(format!(
-            "rest/bug?id={}&include_fields={}",
-            params.join(","),
-            INCLUDED_FIELDS
+            "rest/bug?id={}&include_fields={}{}",
+            request.ids.join(","),
+            INCLUDED_FIELDS,
+            limit
         ))
     }
 }
@@ -46,8 +77,13 @@ impl BzInstance {
             client.set_header("Authorization", &format!("Bearer {}", key))?;
         }
 
+        let request = Request {
+            ids,
+            pagination: &self.pagination,
+        };
+
         // Gets a bug by ID and deserializes the JSON to data variable
-        let data: RestResponse<Response> = client.get(ids)?;
+        let data: RestResponse<Response> = client.get(request)?;
         let response = data.into_inner();
         debug!("{:#?}", response);
 

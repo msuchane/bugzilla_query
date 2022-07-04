@@ -1,12 +1,15 @@
+use std::default::Default;
+
 // use restson;
 use bugzilla_query::*;
+use serde_json::Value;
 
 /// A common convenience function to get anonymous access
 /// to the Red Hat Bugzilla instance.
 fn rh_bugzilla() -> BzInstance {
     BzInstance {
         host: "https://bugzilla.redhat.com".to_string(),
-        auth: Auth::Anonymous,
+        ..Default::default()
     }
 }
 
@@ -49,11 +52,7 @@ fn check_custom_fields() {
     let bug = instance.bug("1906887").unwrap();
 
     // As a custom field, Doc Text is available in the `extra` hash map.
-    let doc_text = bug
-        .extra
-        .get("cf_release_notes")
-        .map(|rn| rn.as_str().unwrap().to_string())
-        .unwrap();
+    let doc_text = bug.extra.get("cf_release_notes").and_then(Value::as_str);
 
     // This is the expected value of Doc Text. Bugzilla uses `\r\n` line endings.
     let release_note = ".A test\r\n\
@@ -68,7 +67,7 @@ fn check_custom_fields() {
         * Two\r\n\
         * Three";
 
-    assert_eq!(doc_text, release_note);
+    assert_eq!(doc_text, Some(release_note));
 }
 
 // Access to flags requires authentication, so I'm disabling this test for now.
