@@ -5,7 +5,7 @@ use serde_json::Value;
 /// A common convenience function to get anonymous access
 /// to the Red Hat Bugzilla instance.
 fn rh_bugzilla() -> BzInstance {
-    BzInstance::at("https://bugzilla.redhat.com".to_string())
+    BzInstance::at("https://bugzilla.redhat.com".to_string()).unwrap()
 }
 
 /// Try accessing a public bug intended for testing

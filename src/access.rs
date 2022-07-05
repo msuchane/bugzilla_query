@@ -3,16 +3,17 @@
 
 use log::debug;
 use restson::{Error, Response as RestResponse, RestClient, RestPath};
+use restson::blocking::RestClient as BlockingRestClient;
 
 use crate::bug_model::{Bug, Response};
 
 /// Configuration and credentials to access a Bugzilla instance.
-#[derive(Default)]
 pub struct BzInstance {
     pub host: String,
     pub auth: Auth,
     pub pagination: Pagination,
     pub included_fields: Vec<String>,
+    client: BlockingRestClient,
 }
 
 /// The authentication method that the crate uses when contacting Bugzilla.
@@ -71,20 +72,29 @@ impl RestPath<Request<'_>> for Response {
 impl BzInstance {
     /// Create a new `BzInstance` struct using a host URL, with default values
     /// for all options.
-    #[must_use]
-    pub fn at(host: String) -> Self {
-        BzInstance {
+    pub fn at(host: String) -> Result<Self, Error> {
+        // TODO: This function takes host as a String, even though client is happy with &str.
+        // The String is only used in the host struct attribute.
+        let client = RestClient::builder().blocking(&host)?;
+
+        Ok(BzInstance {
             host,
+            client,
             included_fields: vec!["_default".to_string()],
-            ..Default::default()
-        }
+            auth: Auth::default(),
+            pagination: Pagination::default(),
+        })
     }
 
     /// Set the authentication method of this `BzInstance`.
-    #[must_use]
-    pub fn authenticate(mut self, auth: Auth) -> Self {
+    pub fn authenticate(mut self, auth: Auth) -> Result<Self, Error> {
         self.auth = auth;
-        self
+        // If the user selects the API key authorization, set the API key in the request header.
+        // Otherwise, the anonymous authorization doesn't modify the request in any way.
+        if let Auth::ApiKey(key) = &self.auth {
+            self.client.set_header("Authorization", &format!("Bearer {}", key))?;
+        }
+        Ok(self)
     }
 
     /// Set the pagination method of this `BzInstance`.
@@ -117,14 +127,6 @@ impl BzInstance {
 
     /// Access several bugs by their IDs.
     pub fn bugs(&self, ids: &[&str]) -> Result<Vec<Bug>, Error> {
-        let mut client = RestClient::builder().blocking(&self.host)?;
-
-        // If the user selects the API key authorization, set the API key in the request header.
-        // Otherwise, the anonymous authorization doesn't modify the request in any way.
-        if let Auth::ApiKey(key) = &self.auth {
-            client.set_header("Authorization", &format!("Bearer {}", key))?;
-        }
-
         let request = Request {
             ids,
             pagination: &self.pagination,
@@ -132,7 +134,7 @@ impl BzInstance {
         };
 
         // Gets a bug by ID and deserializes the JSON to data variable
-        let data: RestResponse<Response> = client.get(request)?;
+        let data: RestResponse<Response> = self.client.get(request)?;
         let response = data.into_inner();
         debug!("{:#?}", response);
 
