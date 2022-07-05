@@ -12,11 +12,8 @@ pub struct BzInstance {
     pub host: String,
     pub auth: Auth,
     pub pagination: Pagination,
+    pub included_fields: Vec<String>,
 }
-
-// TODO: Make these configurable.
-// For now, let's define the included fields as a constant.
-const INCLUDED_FIELDS: &str = "_default,pool,flags";
 
 /// The authentication method that the crate uses when contacting Bugzilla.
 #[derive(Default)]
@@ -39,29 +36,34 @@ pub enum Pagination {
     Unlimited,
 }
 
+impl Pagination {
+    /// Format the `Pagination` variant as a URL query fragment, such as `?limit=20`.
+    fn as_query(&self) -> String {
+        match self {
+            Pagination::Default => String::new(),
+            Pagination::Limit(n) => format!("&limit={}", n),
+            Pagination::Unlimited => "&limit=0".to_string(),
+        }
+    }
+}
+
 /// This struct temporarily groups together all the parameters to make a REST request.
 /// It exists here because `RestPath` is only generic over a single parameter.
 struct Request<'a> {
     ids: &'a [&'a str],
     pagination: &'a Pagination,
+    fields: &'a str,
 }
 
 // TODO: Make this generic over &[&str] and &[String].
 /// API call with several &str parameter, which are the bug IDs.
 impl RestPath<Request<'_>> for Response {
     fn get_path(request: Request) -> Result<String, Error> {
-        let limit = match request.pagination {
-            Pagination::Default => String::new(),
-            Pagination::Limit(n) => format!("&limit={}", n),
-            Pagination::Unlimited => "&limit=0".to_string(),
-        };
-
-        // TODO: Make these configurable:
         Ok(format!(
-            "rest/bug?id={}&include_fields={}{}",
+            "rest/bug?id={}{}{}",
             request.ids.join(","),
-            INCLUDED_FIELDS,
-            limit
+            request.fields,
+            request.pagination.as_query()
         ))
     }
 }
@@ -73,6 +75,7 @@ impl BzInstance {
     pub fn at(host: String) -> Self {
         BzInstance {
             host,
+            included_fields: vec!["_default".to_string()],
             ..Default::default()
         }
     }
@@ -91,6 +94,27 @@ impl BzInstance {
         self
     }
 
+    /// Set Bugzilla fields that this `BzInstance` will request, such as `flags`.
+    ///
+    /// By default, `BzInstance` requests the `_default` fields, and using this method
+    /// overwrites the default value. If you want to set fields in addition
+    /// to `_default`, specify `_default` in your list.
+    #[must_use]
+    pub fn include_fields(mut self, fields: Vec<String>) -> Self {
+        self.included_fields = fields;
+        self
+    }
+
+    /// Format the included Bugzilla fields as a URL query fragment, such as `&include_fields=_default,flags`.
+    #[must_use]
+    fn fields_as_query(&self) -> String {
+        if self.included_fields.is_empty() {
+            String::new()
+        } else {
+            format!("&include_fields={}", self.included_fields.join(","))
+        }
+    }
+
     /// Access several bugs by their IDs.
     pub fn bugs(&self, ids: &[&str]) -> Result<Vec<Bug>, Error> {
         let mut client = RestClient::builder().blocking(&self.host)?;
@@ -104,6 +128,7 @@ impl BzInstance {
         let request = Request {
             ids,
             pagination: &self.pagination,
+            fields: &self.fields_as_query(),
         };
 
         // Gets a bug by ID and deserializes the JSON to data variable
