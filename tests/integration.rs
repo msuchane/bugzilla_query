@@ -1,5 +1,3 @@
-use std::default::Default;
-
 // use restson;
 use bugzilla_query::*;
 use serde_json::Value;
@@ -7,10 +5,7 @@ use serde_json::Value;
 /// A common convenience function to get anonymous access
 /// to the Red Hat Bugzilla instance.
 fn rh_bugzilla() -> BzInstance {
-    BzInstance {
-        host: "https://bugzilla.redhat.com".to_string(),
-        ..Default::default()
-    }
+    BzInstance::at("https://bugzilla.redhat.com".to_string())
 }
 
 /// Try accessing a public bug intended for testing

@@ -67,6 +67,30 @@ impl RestPath<Request<'_>> for Response {
 }
 
 impl BzInstance {
+    /// Create a new `BzInstance` struct using a host URL, with default values
+    /// for all options.
+    #[must_use]
+    pub fn at(host: String) -> Self {
+        BzInstance {
+            host,
+            ..Default::default()
+        }
+    }
+
+    /// Set the authentication method of this `BzInstance`.
+    #[must_use]
+    pub fn authenticate(mut self, auth: Auth) -> Self {
+        self.auth = auth;
+        self
+    }
+
+    /// Set the pagination method of this `BzInstance`.
+    #[must_use]
+    pub fn paginate(mut self, pagination: Pagination) -> Self {
+        self.pagination = pagination;
+        self
+    }
+
     /// Access several bugs by their IDs.
     pub fn bugs(&self, ids: &[&str]) -> Result<Vec<Bug>, Error> {
         let mut client = RestClient::builder().blocking(&self.host)?;
