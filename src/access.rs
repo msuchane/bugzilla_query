@@ -1,7 +1,6 @@
 // Bugzilla API documentation:
 // https://bugzilla.redhat.com/docs/en/html/api/core/v1/general.html
 
-use log::debug;
 use restson::{Error, Response as RestResponse, RestClient, RestPath};
 use restson::blocking::RestClient as BlockingRestClient;
 
@@ -136,7 +135,7 @@ impl BzInstance {
         // Gets a bug by ID and deserializes the JSON to data variable
         let data: RestResponse<Response> = self.client.get(request)?;
         let response = data.into_inner();
-        debug!("{:#?}", response);
+        log::debug!("{:#?}", response);
 
         // TODO: Note that the resulting list might be empty and still Ok
         Ok(response.bugs)
