@@ -15,6 +15,15 @@ fn access_bug() {
     let _bug = instance.bug("1906883").unwrap();
 }
 
+/// Try accessing a bug that doesn not exist.
+#[test]
+fn access_missing_bug() {
+    let instance = rh_bugzilla();
+    let bug = instance.bug("111111111111111111");
+
+    assert!(matches!(bug.unwrap_err(), BugzillaQueryError::NoBugs));
+}
+
 /// Check that the bug fields contain the expected values.
 /// Work with fields that are standard in Bugzilla, rather than custom extensions.
 #[test]

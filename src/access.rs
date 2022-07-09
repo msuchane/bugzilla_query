@@ -1,10 +1,11 @@
 // Bugzilla API documentation:
 // https://bugzilla.redhat.com/docs/en/html/api/core/v1/general.html
 
-use restson::{Error, Response as RestResponse, RestClient, RestPath};
 use restson::blocking::RestClient as BlockingRestClient;
+use restson::{Error as RestError, Response as RestResponse, RestClient, RestPath};
 
 use crate::bug_model::{Bug, Response};
+use crate::errors::BugzillaQueryError;
 
 /// Configuration and credentials to access a Bugzilla instance.
 pub struct BzInstance {
@@ -58,7 +59,7 @@ struct Request<'a> {
 // TODO: Make this generic over &[&str] and &[String].
 /// API call with several &str parameter, which are the bug IDs.
 impl RestPath<Request<'_>> for Response {
-    fn get_path(request: Request) -> Result<String, Error> {
+    fn get_path(request: Request) -> Result<String, RestError> {
         Ok(format!(
             "rest/bug?id={}{}{}",
             request.ids.join(","),
@@ -71,7 +72,7 @@ impl RestPath<Request<'_>> for Response {
 impl BzInstance {
     /// Create a new `BzInstance` struct using a host URL, with default values
     /// for all options.
-    pub fn at(host: String) -> Result<Self, Error> {
+    pub fn at(host: String) -> Result<Self, BugzillaQueryError> {
         // TODO: This function takes host as a String, even though client is happy with &str.
         // The String is only used in the host struct attribute.
         let client = RestClient::builder().blocking(&host)?;
@@ -86,12 +87,13 @@ impl BzInstance {
     }
 
     /// Set the authentication method of this `BzInstance`.
-    pub fn authenticate(mut self, auth: Auth) -> Result<Self, Error> {
+    pub fn authenticate(mut self, auth: Auth) -> Result<Self, BugzillaQueryError> {
         self.auth = auth;
         // If the user selects the API key authorization, set the API key in the request header.
         // Otherwise, the anonymous authorization doesn't modify the request in any way.
         if let Auth::ApiKey(key) = &self.auth {
-            self.client.set_header("Authorization", &format!("Bearer {}", key))?;
+            self.client
+                .set_header("Authorization", &format!("Bearer {}", key))?;
         }
         Ok(self)
     }
@@ -125,7 +127,7 @@ impl BzInstance {
     }
 
     /// Access several bugs by their IDs.
-    pub fn bugs(&self, ids: &[&str]) -> Result<Vec<Bug>, Error> {
+    pub fn bugs(&self, ids: &[&str]) -> Result<Vec<Bug>, BugzillaQueryError> {
         let request = Request {
             ids,
             pagination: &self.pagination,
@@ -137,20 +139,21 @@ impl BzInstance {
         let response = data.into_inner();
         log::debug!("{:#?}", response);
 
-        // TODO: Note that the resulting list might be empty and still Ok
-        Ok(response.bugs)
+        // The resulting list might be empty. In that case, return an error.
+        if response.bugs.is_empty() {
+            Err(BugzillaQueryError::NoBugs)
+        } else {
+            Ok(response.bugs)
+        }
     }
 
     /// Access a single bug by its ID.
-    pub fn bug(&self, id: &str) -> Result<Bug, Error> {
+    pub fn bug(&self, id: &str) -> Result<Bug, BugzillaQueryError> {
         // Reuse the `bugs` function. Later, extract the first element.
         let bugs = self.bugs(&[id])?;
 
         // This is a way to return the first (and only) element of the Vec,
         // without cloning it.
-        // TODO: I'm using InvalidValue here mostly as a placeholder.
-        // The response should always contain one bug, but if it doesn't,
-        // I don't know how best to report it. Maybe just panic?
-        bugs.into_iter().next().ok_or(Error::InvalidValue)
+        bugs.into_iter().next().ok_or(BugzillaQueryError::NoBugs)
     }
 }
