@@ -1,7 +1,6 @@
 // Bugzilla API documentation:
 // https://bugzilla.redhat.com/docs/en/html/api/core/v1/general.html
 
-use restson::blocking::RestClient as BlockingRestClient;
 use restson::{Error as RestError, Response as RestResponse, RestClient, RestPath};
 
 use crate::bug_model::{Bug, Response};
@@ -13,7 +12,7 @@ pub struct BzInstance {
     pub auth: Auth,
     pub pagination: Pagination,
     pub included_fields: Vec<String>,
-    client: BlockingRestClient,
+    client: RestClient,
 }
 
 /// The authentication method that the crate uses when contacting Bugzilla.
@@ -75,7 +74,7 @@ impl BzInstance {
     pub fn at(host: String) -> Result<Self, BugzillaQueryError> {
         // TODO: This function takes host as a String, even though client is happy with &str.
         // The String is only used in the host struct attribute.
-        let client = RestClient::builder().blocking(&host)?;
+        let client = RestClient::new(&host)?;
 
         Ok(BzInstance {
             host,
@@ -127,7 +126,7 @@ impl BzInstance {
     }
 
     /// Access several bugs by their IDs.
-    pub fn bugs(&self, ids: &[&str]) -> Result<Vec<Bug>, BugzillaQueryError> {
+    pub async fn bugs(&self, ids: &[&str]) -> Result<Vec<Bug>, BugzillaQueryError> {
         let request = Request {
             ids,
             pagination: &self.pagination,
@@ -135,7 +134,7 @@ impl BzInstance {
         };
 
         // Gets a bug by ID and deserializes the JSON to data variable
-        let data: RestResponse<Response> = self.client.get(request)?;
+        let data: RestResponse<Response> = self.client.get(request).await?;
         let response = data.into_inner();
         log::debug!("{:#?}", response);
 
@@ -148,9 +147,9 @@ impl BzInstance {
     }
 
     /// Access a single bug by its ID.
-    pub fn bug(&self, id: &str) -> Result<Bug, BugzillaQueryError> {
+    pub async fn bug(&self, id: &str) -> Result<Bug, BugzillaQueryError> {
         // Reuse the `bugs` function. Later, extract the first element.
-        let bugs = self.bugs(&[id])?;
+        let bugs = self.bugs(&[id]).await?;
 
         // This is a way to return the first (and only) element of the Vec,
         // without cloning it.

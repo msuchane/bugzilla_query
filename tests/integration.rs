@@ -1,4 +1,6 @@
 // use restson;
+use tokio;
+
 use bugzilla_query::*;
 use serde_json::Value;
 
@@ -9,27 +11,27 @@ fn rh_bugzilla() -> BzInstance {
 }
 
 /// Try accessing a public bug intended for testing
-#[test]
-fn access_bug() {
+#[tokio::test]
+async fn access_bug() {
     let instance = rh_bugzilla();
-    let _bug = instance.bug("1906883").unwrap();
+    let _bug = instance.bug("1906883").await.unwrap();
 }
 
 /// Try accessing a bug that doesn not exist.
-#[test]
-fn access_missing_bug() {
+#[tokio::test]
+async fn access_missing_bug() {
     let instance = rh_bugzilla();
     let bug = instance.bug("111111111111111111");
 
-    assert!(matches!(bug.unwrap_err(), BugzillaQueryError::NoBugs));
+    assert!(matches!(bug.await.unwrap_err(), BugzillaQueryError::NoBugs));
 }
 
 /// Check that the bug fields contain the expected values.
 /// Work with fields that are standard in Bugzilla, rather than custom extensions.
-#[test]
-fn check_standard_fields() {
+#[tokio::test]
+async fn check_standard_fields() {
     let instance = rh_bugzilla();
-    let bug = instance.bug("1906887").unwrap();
+    let bug = instance.bug("1906887").await.unwrap();
 
     assert_eq!(bug.id, 1906887);
     assert_eq!(
@@ -50,10 +52,10 @@ fn check_standard_fields() {
 /// Check that the bug fields contain the expected values.
 /// Work with custom fields that are available in the Red Hat Bugzilla.
 /// Namely, check access to the Doc Text field.
-#[test]
-fn check_custom_fields() {
+#[tokio::test]
+async fn check_custom_fields() {
     let instance = rh_bugzilla();
-    let bug = instance.bug("1906887").unwrap();
+    let bug = instance.bug("1906887").await.unwrap();
 
     // As a custom field, Doc Text is available in the `extra` hash map.
     let doc_text = bug.extra.get("cf_release_notes").and_then(Value::as_str);
