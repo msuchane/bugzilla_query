@@ -1,4 +1,5 @@
 // use restson;
+use chrono::prelude::*;
 use tokio;
 
 use bugzilla_query::*;
@@ -47,6 +48,17 @@ async fn check_standard_fields() {
     assert_eq!(bug.assigned_to_detail.email, "msuchane");
     assert_eq!(bug.docs_contact, "Marek Suchánek");
     assert_eq!(bug.docs_contact_detail.unwrap().email, "msuchane");
+}
+
+/// Check that the bug was created at the expected date, and that time deserialization
+/// works as expected.
+#[tokio::test]
+async fn check_time() {
+    let instance = rh_bugzilla();
+    let bug = instance.bug("1906887").await.unwrap();
+
+    let date_created = chrono::Utc.ymd(2020, 12, 11);
+    assert_eq!(bug.creation_time.date(), date_created);
 }
 
 /// Check that the bug fields contain the expected values.

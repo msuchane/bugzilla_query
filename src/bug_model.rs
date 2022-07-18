@@ -3,6 +3,7 @@
 /// in the `extra` hash map in the parent struct.
 use std::fmt;
 
+use chrono::{DateTime, Utc};
 use serde::Deserialize;
 use serde_json::Value;
 
@@ -53,11 +54,11 @@ pub struct Bug {
     pub severity: String,
     pub product: String,
     pub platform: String,
-    pub last_change_time: String,
+    pub last_change_time: DateTime<Utc>,
     pub remaining_time: Option<i64>,
     pub priority: String,
     pub whiteboard: String,
-    pub creation_time: String,
+    pub creation_time: DateTime<Utc>,
     pub is_confirmed: bool,
     pub qa_contact: String,
     pub qa_contact_detail: Option<User>,
@@ -72,7 +73,7 @@ pub struct Bug {
     pub blocks: Vec<i32>,
     pub see_also: Vec<String>,
     pub groups: Vec<String>,
-    pub deadline: Option<String>,
+    pub deadline: Option<DateTime<Utc>>,
     pub update_token: Option<String>,
     pub work_time: Option<i64>,
     // Not part of the default response:
@@ -101,8 +102,8 @@ pub struct User {
 pub struct Flag {
     pub id: i32,
     pub type_id: i32,
-    pub creation_date: String,
-    pub modification_date: String,
+    pub creation_date: DateTime<Utc>,
+    pub modification_date: DateTime<Utc>,
     pub name: String,
     pub status: String,
     pub setter: String,
