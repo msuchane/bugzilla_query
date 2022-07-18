@@ -3,7 +3,7 @@
 /// in the `extra` hash map in the parent struct.
 use std::fmt;
 
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, NaiveDate, Utc};
 use serde::Deserialize;
 use serde_json::Value;
 
@@ -73,7 +73,8 @@ pub struct Bug {
     pub blocks: Vec<i32>,
     pub see_also: Vec<String>,
     pub groups: Vec<String>,
-    pub deadline: Option<DateTime<Utc>>,
+    /// Bugzilla stores `deadline` only as `YYYY-MM-DD`, so it can't deserialize to full `DateTime`.
+    pub deadline: Option<NaiveDate>,
     pub update_token: Option<String>,
     pub work_time: Option<i64>,
     // Not part of the default response:
