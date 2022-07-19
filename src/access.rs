@@ -38,7 +38,7 @@ pub enum Pagination {
 
 impl Pagination {
     /// Format the `Pagination` variant as a URL query fragment, such as `?limit=20`.
-    fn as_query(&self) -> String {
+    fn url_fragment(&self) -> String {
         match self {
             Pagination::Default => String::new(),
             Pagination::Limit(n) => format!("&limit={}", n),
@@ -50,9 +50,25 @@ impl Pagination {
 /// This struct temporarily groups together all the parameters to make a REST request.
 /// It exists here because `RestPath` is only generic over a single parameter.
 struct Request<'a> {
-    ids: &'a [&'a str],
+    method: Method<'a>,
     pagination: &'a Pagination,
     fields: &'a str,
+}
+
+/// The method of the request to Bugzilla. Either request specific IDs,
+/// or use a free-form Bugzilla query as-is.
+enum Method<'a> {
+    Ids(&'a [&'a str]),
+    Query(&'a str),
+}
+
+impl<'a> Method<'a> {
+    fn url_fragment(self) -> String {
+        match self {
+            Self::Ids(ids) => format!("id={}", ids.join(",")),
+            Self::Query(query) => query.to_string(),
+        }
+    }
 }
 
 // TODO: Make this generic over &[&str] and &[String].
@@ -60,10 +76,10 @@ struct Request<'a> {
 impl RestPath<Request<'_>> for Response {
     fn get_path(request: Request) -> Result<String, RestError> {
         Ok(format!(
-            "rest/bug?id={}{}{}",
-            request.ids.join(","),
+            "rest/bug?{}{}{}",
+            request.method.url_fragment(),
             request.fields,
-            request.pagination.as_query()
+            request.pagination.url_fragment()
         ))
     }
 }
@@ -128,7 +144,7 @@ impl BzInstance {
     /// Access several bugs by their IDs.
     pub async fn bugs(&self, ids: &[&str]) -> Result<Vec<Bug>, BugzillaQueryError> {
         let request = Request {
-            ids,
+            method: Method::Ids(ids),
             pagination: &self.pagination,
             fields: &self.fields_as_query(),
         };
@@ -154,5 +170,28 @@ impl BzInstance {
         // This is a way to return the first (and only) element of the Vec,
         // without cloning it.
         bugs.into_iter().next().ok_or(BugzillaQueryError::NoBugs)
+    }
+
+    /// Access bugs using a free-form Bugzilla query.
+    ///
+    /// An example of a query: `component=rust&product=Fedora&version=36`.
+    pub async fn query(&self, query: &str) -> Result<Vec<Bug>, BugzillaQueryError> {
+        let request = Request {
+            method: Method::Query(query),
+            pagination: &self.pagination,
+            fields: &self.fields_as_query(),
+        };
+
+        // Gets a bug by ID and deserializes the JSON to data variable
+        let data: RestResponse<Response> = self.client.get(request).await?;
+        let response = data.into_inner();
+        log::debug!("{:#?}", response);
+
+        // The resulting list might be empty. In that case, return an error.
+        if response.bugs.is_empty() {
+            Err(BugzillaQueryError::NoBugs)
+        } else {
+            Ok(response.bugs)
+        }
     }
 }

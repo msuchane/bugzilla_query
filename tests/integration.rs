@@ -101,3 +101,11 @@ fn check_flags() {
 
     assert_eq!(rdt, Some("+"));
 } */
+
+/// Try accessing bugs that match a Bugzilla query.
+#[tokio::test]
+async fn query_for_bugs() {
+    let instance = rh_bugzilla();
+    let query = "component=rust&product=Fedora&version=16";
+    let _bugs = instance.query(query).await.unwrap();
+}
