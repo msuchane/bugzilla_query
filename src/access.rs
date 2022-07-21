@@ -56,17 +56,17 @@ struct Request<'a> {
 }
 
 /// The method of the request to Bugzilla. Either request specific IDs,
-/// or use a free-form Bugzilla query as-is.
+/// or use a free-form Bugzilla search query as-is.
 enum Method<'a> {
     Ids(&'a [&'a str]),
-    Query(&'a str),
+    Search(&'a str),
 }
 
 impl<'a> Method<'a> {
     fn url_fragment(self) -> String {
         match self {
             Self::Ids(ids) => format!("id={}", ids.join(",")),
-            Self::Query(query) => query.to_string(),
+            Self::Search(query) => query.to_string(),
         }
     }
 }
@@ -172,17 +172,16 @@ impl BzInstance {
         bugs.into_iter().next().ok_or(BugzillaQueryError::NoBugs)
     }
 
-    /// Access bugs using a free-form Bugzilla query.
+    /// Access bugs using a free-form Bugzilla search query.
     ///
     /// An example of a query: `component=rust&product=Fedora&version=36`.
-    pub async fn query(&self, query: &str) -> Result<Vec<Bug>, BugzillaQueryError> {
+    pub async fn search(&self, query: &str) -> Result<Vec<Bug>, BugzillaQueryError> {
         let request = Request {
-            method: Method::Query(query),
+            method: Method::Search(query),
             pagination: &self.pagination,
             fields: &self.fields_as_query(),
         };
 
-        // Gets a bug by ID and deserializes the JSON to data variable
         let data: RestResponse<Response> = self.client.get(request).await?;
         let response = data.into_inner();
         log::debug!("{:#?}", response);

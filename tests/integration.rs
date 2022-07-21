@@ -107,5 +107,5 @@ fn check_flags() {
 async fn query_for_bugs() {
     let instance = rh_bugzilla();
     let query = "component=rust&product=Fedora&version=16";
-    let _bugs = instance.query(query).await.unwrap();
+    let _bugs = instance.search(query).await.unwrap();
 }
