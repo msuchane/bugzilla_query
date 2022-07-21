@@ -30,7 +30,7 @@ pub struct BugzillaError {
 }
 
 /// The representation of a single Bugzilla bug with all its fields.
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
 pub struct Bug {
     pub op_sys: String,
     pub classification: String,
@@ -86,7 +86,7 @@ pub struct Bug {
 }
 
 /// The representation of a Bugzilla user account.
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
 pub struct User {
     pub email: String,
     pub id: i32,
@@ -99,7 +99,7 @@ pub struct User {
 /// The representation of a flag in a bug.
 /// A flag resembles a hash map entry, where `flag.name` is the key
 /// and `flag.status` is the value.
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
 pub struct Flag {
     pub id: i32,
     pub type_id: i32,

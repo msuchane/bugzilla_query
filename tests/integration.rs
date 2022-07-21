@@ -109,3 +109,12 @@ async fn search_for_bugs() {
     let query = "component=rust&product=Fedora&version=36";
     let _bugs = instance.search(query).await.unwrap();
 }
+
+/// Make sure that no IDs on the input result in no bugs, without errors.
+#[tokio::test]
+async fn check_no_bugs() {
+    let instance = rh_bugzilla();
+    let bugs = instance.bugs(&[]).await;
+
+    assert_eq!(bugs.ok(), Some(vec![]));
+}

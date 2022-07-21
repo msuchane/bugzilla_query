@@ -151,6 +151,13 @@ impl BzInstance {
 
     /// Access several bugs by their IDs.
     pub async fn bugs(&self, ids: &[&str]) -> Result<Vec<Bug>, BugzillaQueryError> {
+        // If the user specifies no IDs, skip network requests and return no bugs.
+        // Returning an error could also be valid, but I believe that this behavior
+        // is less surprising and more practical.
+        if ids.is_empty() {
+            return Ok(Vec::new());
+        }
+
         let request = Request {
             method: Method::Ids(ids),
             pagination: &self.pagination,
