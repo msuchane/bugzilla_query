@@ -21,6 +21,10 @@ pub enum Auth {
     #[default]
     Anonymous,
     ApiKey(String),
+    Basic {
+        user: String,
+        password: String,
+    },
 }
 
 /// Controls the upper limit of how many bugs the response from Bugzilla can contain:
@@ -104,11 +108,15 @@ impl BzInstance {
     /// Set the authentication method of this `BzInstance`.
     pub fn authenticate(mut self, auth: Auth) -> Result<Self, BugzillaQueryError> {
         self.auth = auth;
-        // If the user selects the API key authorization, set the API key in the request header.
-        // Otherwise, the anonymous authorization doesn't modify the request in any way.
-        if let Auth::ApiKey(key) = &self.auth {
-            self.client
-                .set_header("Authorization", &format!("Bearer {}", key))?;
+        match &self.auth {
+            Auth::ApiKey(key) => {
+                self.client
+                    .set_header("Authorization", &format!("Bearer {}", key))?;
+            }
+            Auth::Basic { user, password } => {
+                self.client.set_auth(user, password);
+            }
+            Auth::Anonymous => {}
         }
         Ok(self)
     }
