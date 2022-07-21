@@ -106,6 +106,6 @@ fn check_flags() {
 #[tokio::test]
 async fn search_for_bugs() {
     let instance = rh_bugzilla();
-    let query = "component=rust&product=Fedora&version=16";
+    let query = "component=rust&product=Fedora&version=36";
     let _bugs = instance.search(query).await.unwrap();
 }
