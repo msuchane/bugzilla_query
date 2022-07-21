@@ -102,9 +102,9 @@ fn check_flags() {
     assert_eq!(rdt, Some("+"));
 } */
 
-/// Try accessing bugs that match a Bugzilla query.
+/// Try accessing bugs that match a Bugzilla search query.
 #[tokio::test]
-async fn query_for_bugs() {
+async fn search_for_bugs() {
     let instance = rh_bugzilla();
     let query = "component=rust&product=Fedora&version=16";
     let _bugs = instance.search(query).await.unwrap();
