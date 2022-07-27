@@ -11,9 +11,9 @@ use serde_json::Value;
 /// and some additional metadata.
 #[derive(Clone, Debug, Deserialize)]
 pub struct Response {
-    pub offset: i32,
-    pub limit: String,
-    pub total_matches: i32,
+    pub offset: Option<u32>,
+    pub limit: Option<String>,
+    pub total_matches: Option<u32>,
     pub bugs: Vec<Bug>,
     #[serde(flatten)]
     pub extra: Value,
@@ -28,10 +28,19 @@ pub struct BugzillaError {
     #[serde(flatten)]
     pub extra: Value,
 }
+
 /// Some Bugzilla instances set the component as a single string, some use a list of components.
 #[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
 #[serde(untagged)]
 pub enum Component {
+    One(String),
+    Many(Vec<String>),
+}
+
+/// Some Bugzilla instances set the version as a single string, some use a list of versions.
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
+#[serde(untagged)]
+pub enum Version {
     One(String),
     Many(Vec<String>),
 }
@@ -53,7 +62,7 @@ pub struct Bug {
     pub cc_detail: Vec<User>,
     pub is_open: bool,
     pub is_creator_accessible: bool,
-    pub docs_contact: String,
+    pub docs_contact: Option<String>,
     pub docs_contact_detail: Option<User>,
     pub assigned_to: String,
     pub assigned_to_detail: User,
@@ -70,11 +79,11 @@ pub struct Bug {
     pub qa_contact: String,
     pub qa_contact_detail: Option<User>,
     pub dupe_of: Option<i32>,
-    pub target_release: Vec<String>,
+    pub target_release: Option<Version>,
     pub actual_time: Option<i64>,
     pub component: Component,
     pub is_cc_accessible: bool,
-    pub version: Vec<String>,
+    pub version: Version,
     pub keywords: Vec<String>,
     pub depends_on: Vec<i32>,
     pub blocks: Vec<i32>,

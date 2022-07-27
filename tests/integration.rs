@@ -55,7 +55,7 @@ async fn check_standard_fields() {
     assert_eq!(bug.priority, "medium");
     assert_eq!(bug.assigned_to, "Marek Suchánek");
     assert_eq!(bug.assigned_to_detail.email, "msuchane");
-    assert_eq!(bug.docs_contact, "Marek Suchánek");
+    assert_eq!(bug.docs_contact, Some("Marek Suchánek".to_string()));
     assert_eq!(bug.docs_contact_detail.unwrap().email, "msuchane");
 }
 
