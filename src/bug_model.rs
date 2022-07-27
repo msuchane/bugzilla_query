@@ -28,6 +28,13 @@ pub struct BugzillaError {
     #[serde(flatten)]
     pub extra: Value,
 }
+/// Some Bugzilla instances set the component as a single string, some use a list of components.
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
+#[serde(untagged)]
+pub enum Component {
+    One(String),
+    Many(Vec<String>),
+}
 
 /// The representation of a single Bugzilla bug with all its fields.
 #[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
@@ -65,7 +72,7 @@ pub struct Bug {
     pub dupe_of: Option<i32>,
     pub target_release: Vec<String>,
     pub actual_time: Option<i64>,
-    pub component: Vec<String>,
+    pub component: Component,
     pub is_cc_accessible: bool,
     pub version: Vec<String>,
     pub keywords: Vec<String>,

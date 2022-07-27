@@ -11,6 +11,12 @@ fn rh_bugzilla() -> BzInstance {
     BzInstance::at("https://bugzilla.redhat.com".to_string()).unwrap()
 }
 
+/// A common convenience function to get anonymous access
+/// to the Mozilla Bugzilla instance.
+fn moz_bugzilla() -> BzInstance {
+    BzInstance::at("https://bugzilla.mozilla.org".to_string()).unwrap()
+}
+
 /// Try accessing a public bug intended for testing
 #[tokio::test]
 async fn access_bug() {
@@ -42,7 +48,10 @@ async fn check_standard_fields() {
     assert_eq!(bug.status, "CLOSED");
     assert_eq!(bug.resolution, "CURRENTRELEASE");
     assert_eq!(bug.is_open, false);
-    assert_eq!(bug.component[0], "Documentation");
+    assert_eq!(
+        bug.component,
+        Component::Many(vec!["Documentation".to_string()])
+    );
     assert_eq!(bug.priority, "medium");
     assert_eq!(bug.assigned_to, "Marek Suchánek");
     assert_eq!(bug.assigned_to_detail.email, "msuchane");
@@ -117,4 +126,12 @@ async fn check_no_bugs() {
     let bugs = instance.bugs(&[]).await;
 
     assert_eq!(bugs.ok(), Some(vec![]));
+}
+
+/// Try parsing a bug on the Mozilla instance of Bugzilla.
+#[tokio::test]
+async fn check_mozilla_bug() {
+    let instance = moz_bugzilla();
+    let id = "1243581";
+    let _bug = instance.bug(id).await.unwrap();
 }
