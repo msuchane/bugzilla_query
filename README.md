@@ -1,5 +1,7 @@
 # bugzilla_query
 
+[![Rust tests](https://github.com/msuchane/bugzilla_query/actions/workflows/rust-tests.yml/badge.svg)](https://github.com/msuchane/bugzilla_query/actions/workflows/rust-tests.yml)
+
 Access bugs on a remote Bugzilla instance.
 
 **WARNING**: This crate is in early stages of development. The interface will change, and it might not work at all in your environment.
