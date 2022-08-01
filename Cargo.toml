@@ -4,7 +4,7 @@ authors = ["Marek Suchánek <msuchane@redhat.com>"]
 version = "0.8.1"
 edition = "2021"
 # Check the Rust version using `cargo msrv verify`.
-rust-version = "1.62"
+rust-version = "1.56"
 license = "Apache-2.0"
 description = "Access bugs on a remote Bugzilla instance."
 readme = "README.md"

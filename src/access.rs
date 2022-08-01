@@ -16,15 +16,17 @@ pub struct BzInstance {
 }
 
 /// The authentication method that the crate uses when contacting Bugzilla.
-#[derive(Default)]
 pub enum Auth {
-    #[default]
     Anonymous,
     ApiKey(String),
-    Basic {
-        user: String,
-        password: String,
-    },
+    Basic { user: String, password: String },
+}
+
+// We could set a default enum variant and derive, but that raises the MSRV to 1.62.
+impl Default for Auth {
+    fn default() -> Self {
+        Self::Anonymous
+    }
 }
 
 /// Controls the upper limit of how many bugs the response from Bugzilla can contain:
@@ -32,12 +34,17 @@ pub enum Auth {
 /// * `Default`: Use the default settings of this instance, which sets an arbitrary limit on the number of bugs.
 /// * `Limit`: Use this upper limit instead.
 /// * `Unlimited`: Set the limit to 0, which disables the upper limit and returns all matching bugs.
-#[derive(Default)]
 pub enum Pagination {
-    #[default]
     Default,
     Limit(u32),
     Unlimited,
+}
+
+// We could set a default enum variant and derive, but that raises the MSRV to 1.62.
+impl Default for Pagination {
+    fn default() -> Self {
+        Self::Default
+    }
 }
 
 impl Pagination {
