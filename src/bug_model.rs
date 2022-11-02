@@ -104,7 +104,7 @@ pub struct Bug {
     pub keywords: Vec<String>,
     pub depends_on: Vec<i32>,
     pub blocks: Vec<i32>,
-    pub see_also: Vec<String>,
+    pub see_also: Option<Vec<String>>,
     pub groups: Vec<String>,
     /// Bugzilla stores `deadline` only as `YYYY-MM-DD`, so it can't deserialize to full `DateTime`.
     pub deadline: Option<NaiveDate>,
