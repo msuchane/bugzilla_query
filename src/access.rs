@@ -17,8 +17,6 @@ limitations under the License.
 // Bugzilla API documentation:
 // https://bugzilla.redhat.com/docs/en/html/api/core/v1/general.html
 
-use restson::{Error as RestError, Response as RestResponse, RestClient, RestPath};
-
 use crate::bug_model::{Bug, Response};
 use crate::errors::BugzillaQueryError;
 
@@ -28,7 +26,7 @@ pub struct BzInstance {
     pub auth: Auth,
     pub pagination: Pagination,
     pub included_fields: Vec<String>,
-    client: RestClient,
+    client: reqwest::Client,
 }
 
 /// The authentication method that the crate uses when contacting Bugzilla.
@@ -90,24 +88,24 @@ enum Method<'a> {
 }
 
 impl<'a> Method<'a> {
-    fn url_fragment(self) -> String {
+    fn url_fragment(&self) -> String {
         match self {
             Self::Ids(ids) => format!("id={}", ids.join(",")),
-            Self::Search(query) => query.to_string(),
+            Self::Search(query) => (*query).to_string(),
         }
     }
 }
 
 // TODO: Make this generic over &[&str] and &[String].
 /// API call with several &str parameter, which are the bug IDs.
-impl RestPath<Request<'_>> for Response {
-    fn get_path(request: Request) -> Result<String, RestError> {
-        Ok(format!(
+impl Request<'_> {
+    fn get_path(&self) -> String {
+        format!(
             "rest/bug?{}{}{}",
-            request.method.url_fragment(),
-            request.fields,
-            request.pagination.url_fragment()
-        ))
+            self.method.url_fragment(),
+            self.fields,
+            self.pagination.url_fragment()
+        )
     }
 }
 
@@ -117,7 +115,7 @@ impl BzInstance {
     pub fn at(host: String) -> Result<Self, BugzillaQueryError> {
         // TODO: This function takes host as a String, even though client is happy with &str.
         // The String is only used in the host struct attribute.
-        let client = RestClient::new(&host)?;
+        let client = reqwest::Client::new();
 
         Ok(BzInstance {
             host,
@@ -129,19 +127,10 @@ impl BzInstance {
     }
 
     /// Set the authentication method of this `BzInstance`.
-    pub fn authenticate(mut self, auth: Auth) -> Result<Self, BugzillaQueryError> {
+    #[must_use]
+    pub fn authenticate(mut self, auth: Auth) -> Self {
         self.auth = auth;
-        match &self.auth {
-            Auth::ApiKey(key) => {
-                self.client
-                    .set_header("Authorization", &format!("Bearer {key}"))?;
-            }
-            Auth::Basic { user, password } => {
-                self.client.set_auth(user, password);
-            }
-            Auth::Anonymous => {}
-        }
-        Ok(self)
+        self
     }
 
     /// Set the pagination method of this `BzInstance`.
@@ -187,9 +176,17 @@ impl BzInstance {
             fields: &self.fields_as_query(),
         };
 
+        let url = format!("{}/{}", &self.host, request.get_path());
+
+        let response = self.client.get(&url)
+            .send()
+            .await?
+            .json::<Response>()
+            .await?;
+
         // Gets a bug by ID and deserializes the JSON to data variable
-        let data: RestResponse<Response> = self.client.get(request).await?;
-        let response = data.into_inner();
+        //let data: RestResponse<Response> = self.client.get(request).await?;
+        //let response = data.into_inner();
         log::debug!("{:#?}", response);
 
         // The resulting list might be empty. In that case, return an error.
@@ -220,8 +217,16 @@ impl BzInstance {
             fields: &self.fields_as_query(),
         };
 
-        let data: RestResponse<Response> = self.client.get(request).await?;
-        let response = data.into_inner();
+        let url = format!("{}/{}", &self.host, request.get_path());
+
+        let response = self.client.get(&url)
+            .send()
+            .await?
+            .json::<Response>()
+            .await?;
+
+        //let data: RestResponse<Response> = self.client.get(request).await?;
+        //let response = data.into_inner();
         log::debug!("{:#?}", response);
 
         // The resulting list might be empty. In that case, return an error.

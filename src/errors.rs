@@ -23,6 +23,6 @@ pub enum BugzillaQueryError {
     MissingBugs(Vec<String>),
     #[error("The Bugzilla query returned no bugs.")]
     NoBugs,
-    #[error("Error in the Bugzilla REST API.")]
-    Rest(#[from] restson::Error),
+    #[error("Error in accessing the Bugzilla REST API.")]
+    Request(#[from] reqwest::Error),
 }
