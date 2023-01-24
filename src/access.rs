@@ -72,14 +72,6 @@ impl Pagination {
     }
 }
 
-/// This struct temporarily groups together all the parameters to make a REST request.
-/// It exists here because `RestPath` is only generic over a single parameter.
-struct Request<'a> {
-    method: Method<'a>,
-    pagination: &'a Pagination,
-    fields: &'a str,
-}
-
 /// The method of the request to Bugzilla. Either request specific IDs,
 /// or use a free-form Bugzilla search query as-is.
 enum Method<'a> {
@@ -93,19 +85,6 @@ impl<'a> Method<'a> {
             Self::Ids(ids) => format!("id={}", ids.join(",")),
             Self::Search(query) => (*query).to_string(),
         }
-    }
-}
-
-// TODO: Make this generic over &[&str] and &[String].
-/// API call with several &str parameter, which are the bug IDs.
-impl Request<'_> {
-    fn get_path(&self) -> String {
-        format!(
-            "rest/bug?{}{}{}",
-            self.method.url_fragment(),
-            self.fields,
-            self.pagination.url_fragment()
-        )
     }
 }
 
@@ -161,6 +140,19 @@ impl BzInstance {
         }
     }
 
+    /// Based on the request method, form a complete, absolute URL
+    /// to download the tickets from the REST API.
+    #[must_use]
+    fn path(&self, method: &Method) -> String {
+        format!(
+            "{}/rest/bug?{}{}{}",
+            &self.host,
+            method.url_fragment(),
+            &self.fields_as_query(),
+            self.pagination.url_fragment()
+        )
+    }
+
     /// Access several bugs by their IDs.
     pub async fn bugs(&self, ids: &[&str]) -> Result<Vec<Bug>, BugzillaQueryError> {
         // If the user specifies no IDs, skip network requests and return no bugs.
@@ -170,15 +162,11 @@ impl BzInstance {
             return Ok(Vec::new());
         }
 
-        let request = Request {
-            method: Method::Ids(ids),
-            pagination: &self.pagination,
-            fields: &self.fields_as_query(),
-        };
+        let url = self.path(&Method::Ids(ids));
 
-        let url = format!("{}/{}", &self.host, request.get_path());
-
-        let response = self.client.get(&url)
+        let response = self
+            .client
+            .get(&url)
             .send()
             .await?
             .json::<Response>()
@@ -211,15 +199,11 @@ impl BzInstance {
     ///
     /// An example of a query: `component=rust&product=Fedora&version=36`.
     pub async fn search(&self, query: &str) -> Result<Vec<Bug>, BugzillaQueryError> {
-        let request = Request {
-            method: Method::Search(query),
-            pagination: &self.pagination,
-            fields: &self.fields_as_query(),
-        };
+        let url = self.path(&Method::Search(query));
 
-        let url = format!("{}/{}", &self.host, request.get_path());
-
-        let response = self.client.get(&url)
+        let response = self
+            .client
+            .get(&url)
             .send()
             .await?
             .json::<Response>()
