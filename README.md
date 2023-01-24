@@ -21,7 +21,7 @@ This library provides no functionality to create or modify bugs. The access is r
 
 Without logging in, search for a single bug and check for its assignee:
 
-```
+```rust
 use tokio;
 use bugzilla_query::BzInstance;
 
@@ -41,7 +41,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
 Use an API key to log into Bugzilla. Search for all bugs on Fedora 36 that belong to the `rust` component. Check that there is more than one bug:
 
-```
+```rust
 use tokio;
 use bugzilla_query::{Auth, BzInstance, Pagination};
 
