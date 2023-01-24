@@ -68,7 +68,7 @@ impl Pagination {
     fn url_fragment(&self) -> String {
         match self {
             Pagination::Default => String::new(),
-            Pagination::Limit(n) => format!("&limit={}", n),
+            Pagination::Limit(n) => format!("&limit={n}"),
             Pagination::Unlimited => "&limit=0".to_string(),
         }
     }
@@ -134,7 +134,7 @@ impl BzInstance {
         match &self.auth {
             Auth::ApiKey(key) => {
                 self.client
-                    .set_header("Authorization", &format!("Bearer {}", key))?;
+                    .set_header("Authorization", &format!("Bearer {key}"))?;
             }
             Auth::Basic { user, password } => {
                 self.client.set_auth(user, password);

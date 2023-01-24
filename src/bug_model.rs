@@ -63,6 +63,7 @@ pub enum Version {
 }
 
 /// The representation of a single Bugzilla bug with all its fields.
+#[allow(clippy::struct_excessive_bools)]
 #[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
 pub struct Bug {
     pub op_sys: String,

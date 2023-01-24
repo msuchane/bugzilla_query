@@ -1,5 +1,3 @@
-// use restson;
-use chrono::prelude::*;
 use tokio;
 
 use bugzilla_query::*;
@@ -70,8 +68,8 @@ async fn check_time() {
     let instance = rh_bugzilla();
     let bug = instance.bug("1906887").await.unwrap();
 
-    let date_created = chrono::Utc.ymd(2020, 12, 11);
-    assert_eq!(bug.creation_time.date(), date_created);
+    let date_created = chrono::NaiveDate::from_ymd_opt(2020, 12, 11).unwrap();
+    assert_eq!(bug.creation_time.date_naive(), date_created);
 }
 
 /// Check that the bug fields contain the expected values.
