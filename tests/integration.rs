@@ -1,7 +1,7 @@
+use serde_json::Value;
 use tokio;
 
 use bugzilla_query::*;
-use serde_json::Value;
 
 /// A common convenience function to get anonymous access
 /// to the Red Hat Bugzilla instance.
@@ -118,7 +118,8 @@ fn check_flags() {
 async fn search_for_bugs() {
     let instance = rh_bugzilla();
     let query = "component=rust&product=Fedora&version=36";
-    let _bugs = instance.search(query).await.unwrap();
+    let bugs = instance.search(query).await.unwrap();
+    assert!(bugs.len() > 1);
 }
 
 /// Make sure that no IDs on the input result in no bugs, without errors.
