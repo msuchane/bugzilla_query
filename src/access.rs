@@ -154,6 +154,17 @@ impl BzInstance {
         )
     }
 
+    /// Download the specified URL using the configured authentication.
+    async fn authenticated_get(&self, url: &str) -> Result<reqwest::Response, reqwest::Error> {
+        let request_builder = self.client.get(url);
+        let authenticated = match &self.auth {
+            Auth::Anonymous => request_builder,
+            Auth::ApiKey(key) => request_builder.header("Authorization", &format!("Bearer {key}")),
+            Auth::Basic { user, password } => request_builder.basic_auth(user, Some(password)),
+        };
+        authenticated.send().await
+    }
+
     /// Access several bugs by their IDs.
     pub async fn bugs(&self, ids: &[&str]) -> Result<Vec<Bug>, BugzillaQueryError> {
         // If the user specifies no IDs, skip network requests and return no bugs.
@@ -167,9 +178,7 @@ impl BzInstance {
 
         // Gets a bug by ID and deserializes the JSON to data variable
         let response = self
-            .client
-            .get(&url)
-            .send()
+            .authenticated_get(&url)
             .await?
             .json::<Response>()
             .await?;
@@ -202,9 +211,7 @@ impl BzInstance {
 
         // Gets the bugs by query and deserializes the JSON to data variable
         let response = self
-            .client
-            .get(&url)
-            .send()
+            .authenticated_get(&url)
             .await?
             .json::<Response>()
             .await?;
