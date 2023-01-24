@@ -1,6 +1,11 @@
 # bugzilla_query
 
-[![Rust tests](https://github.com/msuchane/bugzilla_query/actions/workflows/rust-tests.yml/badge.svg)](https://github.com/msuchane/bugzilla_query/actions/workflows/rust-tests.yml)
+[![Crates.io](https://img.shields.io/crates/v/bugzilla_query.svg)](https://crates.io/crates/bugzilla_query)
+[![Apache-2.0 license](https://img.shields.io/crates/l/bugzilla_query)](https://crates.io/crates/bugzilla_query)
+[![Documentation](https://docs.rs/bugzilla_query/badge.svg)](https://docs.rs/bugzilla_query)
+
+[![CI tests](https://github.com/msuchane/bugzilla_query/actions/workflows/rust-tests.yml/badge.svg)](https://github.com/msuchane/bugzilla_query/actions/workflows/rust-tests.yml)
+[![Dependency status](https://deps.rs/repo/github/msuchane/bugzilla_query/status.svg)](https://deps.rs/repo/github/msuchane/bugzilla_query)
 
 Access bugs on a remote Bugzilla instance.
 
@@ -34,7 +39,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
 ### Advanced query
 
-Use an API key to log into Bugzilla. Search for all bugs on Fedora 36 that belong to the `rust` component. Check that there is more than one bug.
+Use an API key to log into Bugzilla. Search for all bugs on Fedora 36 that belong to the `rust` component. Check that there is more than one bug:
 
 ```
 use tokio;
