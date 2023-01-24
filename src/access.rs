@@ -94,6 +94,7 @@ impl BzInstance {
     pub fn at(host: String) -> Result<Self, BugzillaQueryError> {
         // TODO: This function takes host as a String, even though client is happy with &str.
         // The String is only used in the host struct attribute.
+
         let client = reqwest::Client::new();
 
         Ok(BzInstance {
@@ -148,7 +149,7 @@ impl BzInstance {
             "{}/rest/bug?{}{}{}",
             &self.host,
             method.url_fragment(),
-            &self.fields_as_query(),
+            self.fields_as_query(),
             self.pagination.url_fragment()
         )
     }
@@ -164,6 +165,7 @@ impl BzInstance {
 
         let url = self.path(&Method::Ids(ids));
 
+        // Gets a bug by ID and deserializes the JSON to data variable
         let response = self
             .client
             .get(&url)
@@ -172,9 +174,6 @@ impl BzInstance {
             .json::<Response>()
             .await?;
 
-        // Gets a bug by ID and deserializes the JSON to data variable
-        //let data: RestResponse<Response> = self.client.get(request).await?;
-        //let response = data.into_inner();
         log::debug!("{:#?}", response);
 
         // The resulting list might be empty. In that case, return an error.
@@ -201,6 +200,7 @@ impl BzInstance {
     pub async fn search(&self, query: &str) -> Result<Vec<Bug>, BugzillaQueryError> {
         let url = self.path(&Method::Search(query));
 
+        // Gets the bugs by query and deserializes the JSON to data variable
         let response = self
             .client
             .get(&url)
@@ -209,8 +209,6 @@ impl BzInstance {
             .json::<Response>()
             .await?;
 
-        //let data: RestResponse<Response> = self.client.get(request).await?;
-        //let response = data.into_inner();
         log::debug!("{:#?}", response);
 
         // The resulting list might be empty. In that case, return an error.
