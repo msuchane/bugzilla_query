@@ -47,7 +47,7 @@ use bugzilla_query::{Auth, BzInstance, Pagination};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    let bugzilla = BzInstance::at(https://bugzilla.redhat.com".to_string())?
+    let bugzilla = BzInstance::at("https://bugzilla.redhat.com".to_string())?
         .authenticate(Auth::ApiKey("My API Key"))
         .paginate(Pagination::Unlimited);
 
