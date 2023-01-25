@@ -48,7 +48,7 @@ use bugzilla_query::{Auth, BzInstance, Pagination};
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     let bugzilla = BzInstance::at("https://bugzilla.redhat.com".to_string())?
-        .authenticate(Auth::ApiKey("My API Key"))
+        .authenticate(Auth::ApiKey("My API Key".to_string()))
         .paginate(Pagination::Unlimited);
 
     let query = "component=rust&product=Fedora&version=36";
