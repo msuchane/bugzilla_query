@@ -66,6 +66,7 @@ pub enum Version {
 #[allow(clippy::struct_excessive_bools)]
 #[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
 pub struct Bug {
+    pub alias: Vec<String>,
     pub op_sys: String,
     pub classification: String,
     pub id: i32,
