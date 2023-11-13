@@ -137,4 +137,32 @@ async fn check_mozilla_bug() {
     let instance = moz_bugzilla();
     let id = "1243581";
     let _bug = instance.bug(id).await.unwrap();
+
+    let id = "1155520";
+    let _bug = instance.bug(id).await.unwrap();
+}
+
+/// Check that the alias field works correctly across different variants and configuration.
+#[tokio::test]
+async fn check_aliases() {
+    let empty: Vec<String> = vec![];
+
+    let instance = moz_bugzilla();
+    let id = "1243581";
+    let bug = instance.bug(id).await.unwrap();
+
+    assert_eq!(bug.alias, OneOrMany::One("stylo".to_string()));
+    assert_eq!(bug.alias.into_vec(), vec!["stylo".to_string()]);
+
+    let id = "1155520";
+    let bug = instance.bug(id).await.unwrap();
+
+    assert_eq!(bug.alias, OneOrMany::None);
+    assert_eq!(bug.alias.into_vec(), empty.clone());
+
+    let instance = rh_bugzilla();
+    let bug = instance.bug("1906887").await.unwrap();
+
+    assert_eq!(bug.alias, OneOrMany::Many(empty.clone()));
+    assert_eq!(bug.alias.into_vec(), empty.clone());
 }

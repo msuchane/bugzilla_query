@@ -46,27 +46,40 @@ pub struct BugzillaError {
     pub extra: Value,
 }
 
-/// Some Bugzilla instances set the component as a single string, some use a list of components.
+/// Certain fields can appear as a single, optional string or a list of strings based on the Bugzilla instance and its configuration.
 #[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
 #[serde(untagged)]
-pub enum Component {
+pub enum OneOrMany {
+    None,
     One(String),
     Many(Vec<String>),
 }
 
-/// Some Bugzilla instances set the version as a single string, some use a list of versions.
-#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
-#[serde(untagged)]
-pub enum Version {
-    One(String),
-    Many(Vec<String>),
+impl OneOrMany {
+    /// Regardless of the Bugzilla instance configuration, list all items in a vector: empty, one item, or more items.
+    pub fn into_vec(self) -> Vec<String> {
+        match self {
+            Self::None => Vec::new(),
+            Self::One(s) => vec![s],
+            Self::Many(v) => v,
+        }
+    }
 }
+
+/// Some Bugzilla instances set the component as a single string, some use a list of components.
+pub type Component = OneOrMany;
+
+/// Some Bugzilla instances set the version as a single string, some use a list of versions.
+pub type Version = OneOrMany;
+
+/// Some Bugzilla instances set the alias as a single string, some use a list of aliases.
+pub type Alias = OneOrMany;
 
 /// The representation of a single Bugzilla bug with all its fields.
 #[allow(clippy::struct_excessive_bools)]
 #[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
 pub struct Bug {
-    pub alias: Vec<String>,
+    pub alias: Alias,
     pub op_sys: String,
     pub classification: String,
     pub id: i32,
