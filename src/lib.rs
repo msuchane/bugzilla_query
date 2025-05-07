@@ -1,5 +1,5 @@
 /*
-Copyright 2022 Marek Suchánek <msuchane@redhat.com>
+Copyright 2025 Marek Suchánek <marek.suchanek@protonmail.com>
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
